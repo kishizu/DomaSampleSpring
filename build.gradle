@@ -1,0 +1,86 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.7.RELEASE")
+		classpath("org.springframework:springloaded:1.2.4.RELEASE")
+	}
+}
+
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'domaboot'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+idea {
+	module {
+		inheritOutputDirs = false
+		outputDir = file("$buildDir/classes/main/")
+	}
+}
+
+[compileJava,compileTestJava]*.options*.encoding='UTF-8'
+
+/* DomaのSQLファイルをコンパイルより前に出力先Dirにコピーするための設定 */
+processResources.destinationDir = compileJava.destinationDir
+compileJava.dependsOn processResources
+
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+    /* TODO:本当はprovided相当にすべきだができてない */
+    compile("org.projectlombok:lombok:1.14.8")
+    
+    /* DBアクセス関連 */
+    compile("org.springframework:spring-jdbc")
+    compile("org.seasar.doma:doma:2.5.0")
+    
+    /* H2database */
+    compile("com.h2database:h2")
+
+    /* ログの設定 */
+    compile("org.lazyluke:log4jdbc-remix:0.2.7") {
+        exclude module: 'junit'
+    }
+    compile("org.springframework:spring-jdbc")
+    compile("org.lazyluke:log4jdbc-remix:0.2.7")
+    runtime("org.postgresql:postgresql:9.4.1207")
+
+
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+
+    /* Rest APIのテスト用 */
+    testCompile("com.jayway.restassured:rest-assured:2.3.3")
+
+    /* SpockFramework(GroovyのBDDテストフレームワーク) */
+    testCompile("org.spockframework:spock-core:0.7-groovy-2.0")
+
+    /* Geb(ブラウザテスト用フレームワーク) */
+    testCompile "org.gebish:geb-spock:0.10.0"
+
+    /* Selenide(Java製Seleniumラッパー) */
+    testCompile 'com.codeborne:selenide:2.23'
+
+    /* Webドライバ */
+    testCompile "org.seleniumhq.selenium:selenium-chrome-driver:2.48.2"
+
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+}
